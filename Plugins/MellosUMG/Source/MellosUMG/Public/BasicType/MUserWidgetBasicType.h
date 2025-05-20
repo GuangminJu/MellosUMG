@@ -41,9 +41,10 @@ public:
 		
 	}
 
-	FName GetPropertyName() const
+	UFUNCTION(BlueprintPure)
+	FText GetPropertyName() const
 	{
-		return Property->GetFName();
+		return Property->GetDisplayNameText();
 	}
 protected:
 	FProperty* Property = nullptr;
