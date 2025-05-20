@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MUserWidgetBasicType.h"
-#include "UMUserWidgetDoubleType.generated.h"
+#include "MUserWidgetDoubleType.generated.h"
 
 /**
  * 

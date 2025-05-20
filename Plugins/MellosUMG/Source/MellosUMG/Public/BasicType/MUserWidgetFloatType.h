@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MUserWidgetBasicType.h"
-#include "UMUserWidgetFloatType.generated.h"
+#include "MUserWidgetFloatType.generated.h"
 
 /**
  * 
