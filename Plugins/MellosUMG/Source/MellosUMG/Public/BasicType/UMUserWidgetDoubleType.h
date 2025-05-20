@@ -14,7 +14,7 @@ class MELLOSUMG_API UMUserWidgetDoubleType : public UMUserWidgetBasicType
 {
 	GENERATED_BODY()
 
-	virtual FFieldClass* GetSupportedFieldClass() const override;
+	virtual bool IsPropertySupported(const FProperty* InProperty) const override;
 
 	UFUNCTION(BlueprintCallable, Category = "MUserWidget")
 	void SetValue(double InValue);

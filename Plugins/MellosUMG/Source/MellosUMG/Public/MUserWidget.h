@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MUserWidgetBasicType.h"
+#include "BasicType/MUserWidgetBasicType.h"
 #include "StructUtils/InstancedStruct.h"
 
 #include "MUserWidget.generated.h"
@@ -11,23 +11,27 @@
 /**
  * 
  */
-UCLASS()
-class MELLOSUMG_API UMUserWidget : public UUserWidget
+UCLASS(Abstract)
+class MELLOSUMG_API UMUserWidget : public UMUserWidgetBasicType
 {
 	GENERATED_BODY()
 
+	virtual void OnSetProperty(FProperty* InProperty) override;
+	const UStruct* GetSupportedStruct() const;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInstancedStruct InstanceStruct;
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void CollectProperties();
+
+	virtual bool IsPropertySupported(const FProperty* InProperty) const override;
 	
-	TSubclassOf<UMUserWidgetBasicType> GetSupportedWidgetClass(const FFieldClass* FieldClass);
+	TSubclassOf<UMUserWidgetBasicType> GetSupportedWidgetClass(const FProperty* InProperty);
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	TArray<UMUserWidgetBasicType*> GenerateWidget();
-
+	
 	TArray<FProperty*> Properties;
 
 #if WITH_EDITOR

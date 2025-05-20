@@ -3,9 +3,9 @@
 
 #include "BasicType/UMUserWidgetFloatType.h"
 
-FFieldClass* UMUserWidgetFloatType::GetSupportedFieldClass() const
+bool UMUserWidgetFloatType::IsPropertySupported(const FProperty* InProperty) const
 {
-	return FFloatProperty::StaticClass();
+	return InProperty->IsA<FFloatProperty>();	
 }
 
 void UMUserWidgetFloatType::SetValue(float InValue)

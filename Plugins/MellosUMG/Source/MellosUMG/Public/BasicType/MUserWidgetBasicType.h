@@ -15,9 +15,9 @@ class MELLOSUMG_API UMUserWidgetBasicType : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	virtual FFieldClass* GetSupportedFieldClass() const
+	virtual bool IsPropertySupported(const FProperty* InProperty) const
 	{
-		return nullptr;
+		return false;
 	}
 
 	void SetProperty(FProperty* InProperty)
@@ -31,9 +31,19 @@ public:
 		Memory = InMemory;
 	}
 
+	void* GetMemory() const
+	{
+		return Memory;
+	}
+
 	virtual void OnSetProperty(FProperty* InProperty)
 	{
 		
+	}
+
+	FName GetPropertyName() const
+	{
+		return Property->GetFName();
 	}
 protected:
 	FProperty* Property = nullptr;

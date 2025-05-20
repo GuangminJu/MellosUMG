@@ -1,8 +1,8 @@
 #include "BasicType/UMUserWidgetDoubleType.h"
 
-FFieldClass* UMUserWidgetDoubleType::GetSupportedFieldClass() const
+bool UMUserWidgetDoubleType::IsPropertySupported(const FProperty* InProperty) const
 {
-	return FDoubleProperty::StaticClass();
+	return InProperty->IsA<FDoubleProperty>();
 }
 
 void UMUserWidgetDoubleType::SetValue(double InValue)
