@@ -9,6 +9,8 @@
 #include "MObjectUserWidget.generated.h"
 
 
+class UFunctionUserWidget;
+
 USTRUCT(Blueprintable)
 struct FFunctionSettings
 {
@@ -19,6 +21,9 @@ struct FFunctionSettings
 
 	UPROPERTY(EditAnywhere, Config)
 	bool bGenerateUI = false;
+
+	UPROPERTY(EditAnywhere, Config)
+	TSubclassOf<UFunctionUserWidget> WidgetClassOverride;
 
 	bool operator==(const FFunctionSettings& RHS) const
 	{
@@ -54,8 +59,8 @@ protected:
 	TSubclassOf<UMUserWidgetBasicType> GetSupportedWidgetClass(const FProperty* InProperty);
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
-	TArray<UMUserWidgetBasicType*> GenerateWidget();
-	
+	TArray<UUserWidget*> GenerateWidget();
+
 	TArray<FProperty*> Properties;
 
 #if WITH_EDITOR
@@ -64,6 +69,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<UMUserWidgetBasicType>> BasicTypeWidgets;
+	
+	UPROPERTY(EditAnywhere, Config)
+	TSubclassOf<UFunctionUserWidget> FunctionWidgetClass;
 
 	TArray<UFunction*> Functions;
 

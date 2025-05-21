@@ -1,5 +1,7 @@
 ﻿#include "MObjectUserWidget.h"
 
+#include "FunctionWidget/FunctionUserWidget.h"
+
 UMObjectUserWidget::UMObjectUserWidget(): Object(nullptr)
 {
 }
@@ -30,10 +32,11 @@ void UMObjectUserWidget::CollectProperties()
 	Functions.Empty();
 	for (UFunction* Function : TFieldRange<UFunction>(ObjectClass))
 	{
-		if (Function->HasAnyFunctionFlags(FUNC_BlueprintCallable) && Function->GetOwnerClass() == ObjectClass)
+		if (Function->HasAnyFunctionFlags(FUNC_BlueprintCallable) && Function->GetOwnerClass() == ObjectClass &&
+			Function->NumParms == 0 && Function->GetReturnProperty() == nullptr)
 		{
 			Functions.Add(Function);
-			
+
 			if (FunctionSettings.Contains(Function->GetName()))
 				continue;
 
@@ -66,14 +69,14 @@ TSubclassOf<UMUserWidgetBasicType> UMObjectUserWidget::GetSupportedWidgetClass(c
 	return nullptr;
 }
 
-TArray<UMUserWidgetBasicType*> UMObjectUserWidget::GenerateWidget()
+TArray<UUserWidget*> UMObjectUserWidget::GenerateWidget()
 {
 	if (!Object)
 	{
 		Object = NewObject<UObject>(this, ObjectClass);
 	}
 
-	TArray<UMUserWidgetBasicType*> GeneratedWidgets;
+	TArray<UUserWidget*> GeneratedWidgets;
 
 	for (FProperty* SubProperty : Properties)
 	{
@@ -87,6 +90,29 @@ TArray<UMUserWidgetBasicType*> UMObjectUserWidget::GenerateWidget()
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("No widget class found for property : %s"), *SubProperty->GetName());
+		}
+	}
+
+	if (!FunctionWidgetClass)
+	{
+		return GeneratedWidgets;
+	}
+	
+	for (int32 i = 0; i < Functions.Num(); ++i)
+	{
+		if (FunctionSettings[i].bGenerateUI)
+		{
+			TSubclassOf<UFunctionUserWidget> WidgetClassOverride = FunctionWidgetClass;
+			
+			if (FunctionSettings[i].WidgetClassOverride)
+			{
+				WidgetClassOverride = FunctionSettings[i].WidgetClassOverride;
+			}
+
+			UFunctionUserWidget* Widget = NewObject<UFunctionUserWidget>(this, WidgetClassOverride);
+			Widget->SetObject(Object);
+			Widget->SetFunction(Functions[i]);
+			GeneratedWidgets.Add(Widget);
 		}
 	}
 
