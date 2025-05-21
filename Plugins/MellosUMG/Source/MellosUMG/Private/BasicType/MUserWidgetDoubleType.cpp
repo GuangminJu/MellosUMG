@@ -25,6 +25,27 @@ double UMUserWidgetDoubleType::GetValue() const
 	return Value;
 }
 
+bool UMUserWidgetDoubleType::GetClampedValue(double& OutMin, double& OutMax) const
+{
+	if (DoubleProperty)
+	{
+		const FString* ClampMin = DoubleProperty->FindMetaData(TEXT("ClampMin"));
+		const FString* ClampMax = DoubleProperty->FindMetaData(TEXT("ClampMax"));
+		if (ClampMin)
+		{
+			OutMin = FCString::Atod(**ClampMin);
+		}
+		if (ClampMax)
+		{
+			OutMax = FCString::Atod(**ClampMax);
+		}
+			
+		return ClampMin && ClampMax;
+	}
+
+	return false;
+}
+
 void UMUserWidgetDoubleType::OnSetProperty(FProperty* InProperty)
 {
 	DoubleProperty = CastField<FDoubleProperty>(InProperty);

@@ -6,21 +6,23 @@
 #include "BasicType/MUserWidgetBasicType.h"
 #include "StructUtils/InstancedStruct.h"
 
-#include "MUserWidget.generated.h"
+#include "MObjectUserWidget.generated.h"
 
 /**
  * 
  */
 UCLASS(Abstract)
-class MELLOSUMG_API UMUserWidget : public UMUserWidgetBasicType
+class MELLOSUMG_API UMObjectUserWidget : public UMUserWidgetBasicType
 {
 	GENERATED_BODY()
 
 	virtual void OnSetProperty(FProperty* InProperty) override;
-	const UStruct* GetSupportedStruct() const;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FInstancedStruct InstanceStruct;
+	TSubclassOf<UObject> ObjectClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UObject* Object;
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void CollectProperties();

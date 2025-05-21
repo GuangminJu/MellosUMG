@@ -91,9 +91,34 @@ void UMUserWidgetEnumType::OnSetProperty(FProperty* InProperty)
 		for (int32 i = 0; i < NumEnums; ++i)
 		{
 			FString EnumName = Enum->GetNameStringByIndex(i);
-			EnumNames.Add(EnumName);
+			FString Name = Enum->GetMetaData(TEXT("DisplayName"), i);
+			if (!Name.IsEmpty())
+			{
+				EnumNames.Add(Name);				
+			}
 		}
 	}
+}
+
+bool UMUserWidgetEnumType::GetClampedIndex(int32& OutMin, int32& OutMax) const
+{
+	if (Enum.IsValid())
+	{
+		const FString* ClampMin = Enum->FindMetaData(TEXT("ClampMin"));
+		const FString* ClampMax = Enum->FindMetaData(TEXT("ClampMax"));
+		if (ClampMin)
+		{
+			OutMin = FCString::Atoi(**ClampMin);
+		}
+		if (ClampMax)
+		{
+			OutMax = FCString::Atoi(**ClampMax);
+		}
+
+		return ClampMin && ClampMax;
+	}
+
+	return false;
 }
 
 int32 UMUserWidgetEnumType::GetIndexFromEnumName(const FString& EnumName) const

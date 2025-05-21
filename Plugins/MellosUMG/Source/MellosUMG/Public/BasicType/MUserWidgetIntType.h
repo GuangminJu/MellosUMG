@@ -4,31 +4,32 @@
 
 #include "CoreMinimal.h"
 #include "MUserWidgetBasicType.h"
-#include "MUserWidgetStringType.generated.h"
+#include "MUserWidgetIntType.generated.h"
 
 /**
  * 
  */
 UCLASS(Abstract)
-class MELLOSUMG_API UMUserWidgetStringType : public UMUserWidgetBasicType
+class MELLOSUMG_API UMUserWidgetIntType : public UMUserWidgetBasicType
 {
 	GENERATED_BODY()
 
 	virtual bool IsPropertySupported(const FProperty* InProperty) const override;
-
-	UFUNCTION(BlueprintCallable, Category = "MUserWidget")
-	void SetValue(FString InValue);
-
-	UFUNCTION(BlueprintPure, Category = "MUserWidget")
-	FString GetValue() const;
-
 	virtual void OnSetProperty(FProperty* InProperty) override;
 
+	UFUNCTION(BlueprintCallable, Category = "MUserWidget")
+	void SetValue(int32 InValue);
+
+	UFUNCTION(BlueprintPure, Category = "MUserWidget")
+	int32 GetValue() const;
+	
+	UFUNCTION(BlueprintPure, Category = "MUserWidget")
+	bool GetClampedValue(int32& OutMin, int32& OutMax) const;
 public:
 	// If no property is set, use this value
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MUserWidget")
-	FString Value;
+	int32 Value;
 
 private:
-	FStrProperty* StringProperty;
+	FIntProperty* IntProperty;
 };

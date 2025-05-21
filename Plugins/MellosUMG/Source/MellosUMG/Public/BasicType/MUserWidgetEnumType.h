@@ -9,12 +9,13 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class MELLOSUMG_API UMUserWidgetEnumType : public UMUserWidgetBasicType
 {
 	GENERATED_BODY()
 
 	virtual bool IsPropertySupported(const FProperty* InProperty) const override;
+	virtual void OnSetProperty(FProperty* InProperty) override;
 
 	UFUNCTION(BlueprintCallable, Category = "MUserWidget")
 	void SetValue(FString InValue);
@@ -24,9 +25,9 @@ class MELLOSUMG_API UMUserWidgetEnumType : public UMUserWidgetBasicType
 
 	UFUNCTION(BlueprintPure, Category = "MUserWidget")
 	FString GetValue() const;
-
-	virtual void OnSetProperty(FProperty* InProperty) override;
-
+	
+	UFUNCTION(BlueprintPure, Category = "MUserWidget")
+	bool GetClampedIndex(int32& OutMin, int32& OutMax) const;
 public:
 	// If no property is set, use this value
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MUserWidget")

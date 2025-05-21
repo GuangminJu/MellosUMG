@@ -25,7 +25,7 @@ public class MellosUMG : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core", "UMG"
+				"Core", "UMG", "RHI"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

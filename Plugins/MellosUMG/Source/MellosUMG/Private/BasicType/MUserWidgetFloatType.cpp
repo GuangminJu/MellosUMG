@@ -14,7 +14,14 @@ void UMUserWidgetFloatType::SetValue(float InValue)
 
 	if (FloatProperty)
 	{
-		FloatProperty->SetPropertyValue_InContainer(Memory, Value);
+		if (FloatProperty->HasSetter())
+		{
+			FloatProperty->CallSetter(Memory, &Value);
+		}
+		else
+		{
+			FloatProperty->SetPropertyValue(Memory, Value);			
+		}
 	}
 }
 
@@ -22,10 +29,39 @@ float UMUserWidgetFloatType::GetValue() const
 {
 	if (FloatProperty)
 	{
-		return FloatProperty->GetPropertyValue_InContainer(Memory);
+		if (FloatProperty->HasGetter())
+		{
+			FloatProperty->CallGetter(GetMemory(), (void*)&Value);
+			return Value;
+		}
+		else
+		{
+			return FloatProperty->GetPropertyValue(Memory);
+		}
 	}
 
 	return Value;
+}
+
+bool UMUserWidgetFloatType::GetClampedValue(float& OutMin, float& OutMax) const
+{
+	if (FloatProperty)
+	{
+		const FString* ClampMin = FloatProperty->FindMetaData(TEXT("ClampMin"));
+		const FString* ClampMax = FloatProperty->FindMetaData(TEXT("ClampMax"));
+		if (ClampMin)
+		{
+			OutMin = FCString::Atof(**ClampMin);
+		}
+		if (ClampMax)
+		{
+			OutMax = FCString::Atof(**ClampMax);
+		}
+			
+		return ClampMin && ClampMax;
+	}
+		
+	return false;
 }
 
 void UMUserWidgetFloatType::OnSetProperty(FProperty* InProperty)

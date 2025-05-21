@@ -15,6 +15,7 @@ class MELLOSUMG_API UMUserWidgetDoubleType : public UMUserWidgetBasicType
 	GENERATED_BODY()
 
 	virtual bool IsPropertySupported(const FProperty* InProperty) const override;
+	virtual void OnSetProperty(FProperty* InProperty) override;
 
 	UFUNCTION(BlueprintCallable, Category = "MUserWidget")
 	void SetValue(double InValue);
@@ -22,8 +23,8 @@ class MELLOSUMG_API UMUserWidgetDoubleType : public UMUserWidgetBasicType
 	UFUNCTION(BlueprintPure, Category = "MUserWidget")
 	double GetValue() const;
 
-	virtual void OnSetProperty(FProperty* InProperty) override;
-
+	UFUNCTION(BlueprintPure, Category = "MUserWidget")
+	bool GetClampedValue(double& OutMin, double& OutMax) const;
 public:
 	// If no property is set, use this value
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MUserWidget")

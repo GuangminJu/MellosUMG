@@ -1,8 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "MUserWidget.h"
+#include "MStructUserWidget.h"
 
-void UMUserWidget::OnSetProperty(FProperty* InProperty)
+void UMStructUserWidget::OnSetProperty(FProperty* InProperty)
 {
 	FStructProperty* StructProperty = CastField<FStructProperty>(InProperty);
 	if (!StructProperty)
@@ -14,12 +14,7 @@ void UMUserWidget::OnSetProperty(FProperty* InProperty)
 	InstanceStruct.InitializeAs(StructProperty->Struct, static_cast<uint8*>(GetMemory()));
 }
 
-const UStruct* UMUserWidget::GetSupportedStruct() const
-{
-	return InstanceStruct.GetScriptStruct();
-}
-
-void UMUserWidget::CollectProperties()
+void UMStructUserWidget::CollectProperties()
 {
 	Properties.Empty();
 
@@ -29,7 +24,7 @@ void UMUserWidget::CollectProperties()
 	}
 }
 
-bool UMUserWidget::IsPropertySupported(const FProperty* InProperty) const
+bool UMStructUserWidget::IsPropertySupported(const FProperty* InProperty) const
 {
 	const FStructProperty* StructProperty = CastField<FStructProperty>(InProperty);
 	if (!StructProperty)
@@ -38,7 +33,7 @@ bool UMUserWidget::IsPropertySupported(const FProperty* InProperty) const
 	return InstanceStruct.GetScriptStruct() == StructProperty->Struct;
 }
 
-TSubclassOf<UMUserWidgetBasicType> UMUserWidget::GetSupportedWidgetClass(const FProperty* InProperty)
+TSubclassOf<UMUserWidgetBasicType> UMStructUserWidget::GetSupportedWidgetClass(const FProperty* InProperty)
 {
 	for (const TSubclassOf<UMUserWidgetBasicType>& BasicType : BasicTypeWidgets)
 	{
@@ -55,7 +50,7 @@ TSubclassOf<UMUserWidgetBasicType> UMUserWidget::GetSupportedWidgetClass(const F
 	return nullptr;
 }
 
-TArray<UMUserWidgetBasicType*> UMUserWidget::GenerateWidget()
+TArray<UMUserWidgetBasicType*> UMStructUserWidget::GenerateWidget()
 {
 	TArray<UMUserWidgetBasicType*> GeneratedWidgets;
 
@@ -79,11 +74,11 @@ TArray<UMUserWidgetBasicType*> UMUserWidget::GenerateWidget()
 
 #if WITH_EDITOR
 
-void UMUserWidget::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+void UMStructUserWidget::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(UMUserWidget, InstanceStruct))
+	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(UMStructUserWidget, InstanceStruct))
 	{
 		CollectProperties();
 	}
