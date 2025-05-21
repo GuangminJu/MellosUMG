@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/GameUserSettings.h"
 #include "UObject/Object.h"
 #include "GeneralGameSettings.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStringOptionSelectedOptionChanged, int32, SelectedOption);
 
 USTRUCT(Blueprintable)
 struct FStringOption
@@ -13,15 +16,6 @@ struct FStringOption
 
 	FStringOption(): SelectedIdx(0)
 	{
-		FScreenResolutionArray Resolutions;
-		if (RHIGetAvailableResolutions(Resolutions, true))
-		{
-			for (const FScreenResolutionRHI& Res : Resolutions)
-			{
-				FString ResStr = FString::Printf(TEXT("%dx%d"), Res.Width, Res.Height);
-				Options.Add(ResStr);
-			}
-		}
 	}
 
 	FStringOption(const TArray<FString>& InOptions, const int32 InSelectedIdx)
@@ -35,6 +29,10 @@ struct FStringOption
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "General")
 	int32 SelectedIdx;
+
+	void SetSelectedOption(const FString& InOption);
+
+	FStringOptionSelectedOptionChanged OnSelectedOptionChanged;
 };
 
 UENUM(BlueprintType)
@@ -46,35 +44,50 @@ enum class EDisplayMode : uint8
 };
 
 UCLASS(DefaultConfig, Config = Game, Blueprintable, BlueprintType)
-class MELLOSUMG_API UGeneralGameSettings : public UObject
+class MELLOSUMG_API UGeneralGameSettings : public UObject, public FTickableGameObject
 {
 	GENERATED_BODY()
 
 public:
+	UGeneralGameSettings();
+
+	virtual void Tick(float DeltaTime) override;
+	virtual TStatId GetStatId() const override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "General",
-		meta = (DisplayName = "亮度", ClampMin="0", ClampMax = "2"), Config, Setter="SetBrightness")
-	float Brightness = 1.f;
+		meta = (DisplayName = "亮度增强", ClampMin="0", ClampMax = "2"), Config, Setter="SetBrightness")
+	float Brightness = 0.f;
 
 	UFUNCTION(BlueprintCallable, Category = "General")
 	void SetBrightness(float InBrightness);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "General",
-		meta = (DisplayName = "对比度", ClampMin="0", ClampMax = "2"), Config)
-	float Contrast = 1.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "General",
-		meta = (DisplayName = "饱和度", ClampMin="0", ClampMax = "2"), Config)
-	float Saturation = 1.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "General",
-		meta = (DisplayName = "音量", ClampMin="0", ClampMax = "1"), Config)
+		meta = (DisplayName = "音量", ClampMin="0", ClampMax = "1"), Config, Setter="SetVolume")
 	float Volume = 1.f;
 
+	UFUNCTION(BlueprintCallable, Category = "General")
+	void SetVolume(float InVolume);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "General",
-		meta = (DisplayName = "显示模式", ClampMin="0"), Config)
+		meta = (DisplayName = "显示模式", ClampMin="0"), Config, Setter="SetDisplayMode")
 	EDisplayMode DisplayMode = EDisplayMode::Windowed;
+
+	UFUNCTION(BlueprintCallable, Category = "General")
+	void SetDisplayMode(EDisplayMode InDisplayMode);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "General",
 		meta = (DisplayName = "分辨率"), Config)
 	FStringOption Resolution;
+
+	TArray<FScreenResolutionRHI> ScreenResolutionRHI;
+	int32 GetIndex(int32 InWidth, int32 InHeight) const;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "General")
+	static void SetSelectedOption(UPARAM(ref) FStringOption& InResolution, const FString& InOption);
+
+	UFUNCTION()
+	void SetResolution(int32 SelectedOption);
+
+	static EWindowMode::Type GetWindowMode(EDisplayMode InDisplayMode);
 };

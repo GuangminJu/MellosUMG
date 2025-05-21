@@ -8,20 +8,42 @@
 
 #include "MObjectUserWidget.generated.h"
 
-/**
- * 
- */
-UCLASS(Abstract)
+
+USTRUCT(Blueprintable)
+struct FFunctionSettings
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, Config)
+	FString Name;
+
+	UPROPERTY(EditAnywhere, Config)
+	bool bGenerateUI = false;
+
+	bool operator==(const FFunctionSettings& RHS) const
+	{
+		return Name == RHS.Name;
+	}
+
+	bool operator==(const FString& InName) const
+	{
+		return Name == InName;
+	}
+};
+
+UCLASS(Abstract, DefaultConfig, Config = MObjectUserWidget)
 class MELLOSUMG_API UMObjectUserWidget : public UMUserWidgetBasicType
 {
 	GENERATED_BODY()
 
+	UMObjectUserWidget();
+	virtual void PostDuplicate(bool bDuplicateForPIE) override;
 	virtual void OnSetProperty(FProperty* InProperty) override;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UObject> ObjectClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SkipSerialization)
 	UObject* Object;
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
@@ -42,4 +64,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<UMUserWidgetBasicType>> BasicTypeWidgets;
+
+	TArray<UFunction*> Functions;
+
+	UPROPERTY(EditAnywhere, Config)
+	TArray<FFunctionSettings> FunctionSettings;
 };

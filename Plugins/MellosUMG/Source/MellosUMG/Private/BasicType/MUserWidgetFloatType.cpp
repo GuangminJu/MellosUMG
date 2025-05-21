@@ -16,11 +16,11 @@ void UMUserWidgetFloatType::SetValue(float InValue)
 	{
 		if (FloatProperty->HasSetter())
 		{
-			FloatProperty->CallSetter(Memory, &Value);
+			FloatProperty->CallSetter(GetMemory(), &Value);
 		}
 		else
 		{
-			FloatProperty->SetPropertyValue(Memory, Value);			
+			FloatProperty->SetPropertyValue_InContainer(GetMemory(), Value);			
 		}
 	}
 }
@@ -34,10 +34,8 @@ float UMUserWidgetFloatType::GetValue() const
 			FloatProperty->CallGetter(GetMemory(), (void*)&Value);
 			return Value;
 		}
-		else
-		{
-			return FloatProperty->GetPropertyValue(Memory);
-		}
+		
+		return *FloatProperty->GetPropertyValuePtr_InContainer(GetMemory());
 	}
 
 	return Value;

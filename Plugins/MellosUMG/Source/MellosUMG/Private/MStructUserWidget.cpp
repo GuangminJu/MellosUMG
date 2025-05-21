@@ -10,8 +10,9 @@ void UMStructUserWidget::OnSetProperty(FProperty* InProperty)
 		UE_LOG(LogTemp, Warning, TEXT("Property is not a struct property: %s"), *InProperty->GetName());
 		return;
 	}
-	
-	InstanceStruct.InitializeAs(StructProperty->Struct, static_cast<uint8*>(GetMemory()));
+
+	void* StructMemory = InProperty->ContainerPtrToValuePtr<void>(GetMemory());
+	InstanceStruct.InitializeAs(StructProperty->Struct, static_cast<uint8*>(StructMemory));
 }
 
 void UMStructUserWidget::CollectProperties()
@@ -59,8 +60,8 @@ TArray<UMUserWidgetBasicType*> UMStructUserWidget::GenerateWidget()
 		if (TSubclassOf<UMUserWidgetBasicType> Class = GetSupportedWidgetClass(SubProperty))
 		{
 			UMUserWidgetBasicType* Widget = NewObject<UMUserWidgetBasicType>(this, *Class);
-			Widget->SetProperty(SubProperty);
 			Widget->SetMemory(InstanceStruct.GetMutableMemory());
+			Widget->SetProperty(SubProperty);
 			GeneratedWidgets.Add(Widget);
 		}
 		else

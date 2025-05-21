@@ -25,13 +25,19 @@ void UMUserWidgetEnumType::SetValue(FString InValue)
 {
 	Value = InValue;
 
+	uint8 IndexFromEnumName = GetIndexFromEnumName(Value);
+
 	if (Property->HasSetter())
 	{
-		Property->CallSetter(GetMemory(), &Value);
+		Property->CallSetter(GetMemory(), &IndexFromEnumName);
 	}
 	else if (uint8* ContainerPtrToValuePtr = Property->ContainerPtrToValuePtr<uint8>(GetMemory()))
 	{
-		*ContainerPtrToValuePtr = GetIndexFromEnumName(Value);
+		*ContainerPtrToValuePtr = IndexFromEnumName;
+
+		uint8 EnumIndex = *ContainerPtrToValuePtr;
+		ensureMsgf(EnumNames.Num() > EnumIndex, TEXT("Enum index out of range: %d"),
+		           *ContainerPtrToValuePtr);
 	}
 }
 
@@ -44,14 +50,19 @@ FString UMUserWidgetEnumType::GetValue() const
 {
 	if (Property->HasGetter())
 	{
-		int32 Index;
-		Property->CallGetter(GetMemory(), (void*)&Index);
+		uint8 Index;
+		Property->CallGetter(GetMemory(), &Index);
 		return EnumNames[Index];
 	}
 
 	if (uint8* ContainerPtrToValuePtr = Property->ContainerPtrToValuePtr<uint8>(GetMemory()))
 	{
-		int32 EnumIndex = *ContainerPtrToValuePtr;
+		uint8 EnumIndex = *ContainerPtrToValuePtr;
+		if (EnumIndex >= EnumNames.Num())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Enum index out of range: %d"), EnumIndex);
+			return FString();
+		}
 		return EnumNames[EnumIndex];
 	}
 
@@ -94,7 +105,7 @@ void UMUserWidgetEnumType::OnSetProperty(FProperty* InProperty)
 			FString Name = Enum->GetMetaData(TEXT("DisplayName"), i);
 			if (!Name.IsEmpty())
 			{
-				EnumNames.Add(Name);				
+				EnumNames.Add(Name);
 			}
 		}
 	}
@@ -121,7 +132,7 @@ bool UMUserWidgetEnumType::GetClampedIndex(int32& OutMin, int32& OutMax) const
 	return false;
 }
 
-int32 UMUserWidgetEnumType::GetIndexFromEnumName(const FString& EnumName) const
+uint8 UMUserWidgetEnumType::GetIndexFromEnumName(const FString& EnumName) const
 {
 	return EnumNames.IndexOfByPredicate([&](const FString& Name)
 	{

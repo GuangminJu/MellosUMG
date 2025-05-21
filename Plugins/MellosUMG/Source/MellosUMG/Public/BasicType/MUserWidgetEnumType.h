@@ -34,7 +34,7 @@ public:
 	FString Value;
 
 private:
-	int32 GetIndexFromEnumName(const FString& EnumName) const;
+	uint8 GetIndexFromEnumName(const FString& EnumName) const;
 	
 	TWeakObjectPtr<UEnum> Enum;
 	TArray<FString> EnumNames;

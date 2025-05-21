@@ -1,5 +1,16 @@
 ﻿#include "MObjectUserWidget.h"
 
+UMObjectUserWidget::UMObjectUserWidget(): Object(nullptr)
+{
+}
+
+void UMObjectUserWidget::PostDuplicate(bool bDuplicateForPIE)
+{
+	Super::PostDuplicate(bDuplicateForPIE);
+
+	ReloadConfig();
+}
+
 void UMObjectUserWidget::OnSetProperty(FProperty* InProperty)
 {
 	FObjectProperty* ObjectProperty = CastField<FObjectProperty>(InProperty);
@@ -15,6 +26,24 @@ void UMObjectUserWidget::CollectProperties()
 	{
 		Properties.Add(SubProperty);
 	}
+
+	Functions.Empty();
+	for (UFunction* Function : TFieldRange<UFunction>(ObjectClass))
+	{
+		if (Function->HasAnyFunctionFlags(FUNC_BlueprintCallable) && Function->GetOwnerClass() == ObjectClass)
+		{
+			Functions.Add(Function);
+			
+			if (FunctionSettings.Contains(Function->GetName()))
+				continue;
+
+			FFunctionSettings FunctionSetting;
+			FunctionSetting.Name = Function->GetName();
+			FunctionSettings.Add(FunctionSetting);
+		}
+	}
+
+	TryUpdateDefaultConfigFile();
 }
 
 bool UMObjectUserWidget::IsPropertySupported(const FProperty* InProperty) const
@@ -41,9 +70,9 @@ TArray<UMUserWidgetBasicType*> UMObjectUserWidget::GenerateWidget()
 {
 	if (!Object)
 	{
-		Object = ObjectClass.GetDefaultObject();
+		Object = NewObject<UObject>(this, ObjectClass);
 	}
-	
+
 	TArray<UMUserWidgetBasicType*> GeneratedWidgets;
 
 	for (FProperty* SubProperty : Properties)
@@ -51,8 +80,8 @@ TArray<UMUserWidgetBasicType*> UMObjectUserWidget::GenerateWidget()
 		if (TSubclassOf<UMUserWidgetBasicType> Class = GetSupportedWidgetClass(SubProperty))
 		{
 			UMUserWidgetBasicType* Widget = NewObject<UMUserWidgetBasicType>(this, *Class);
-			Widget->SetProperty(SubProperty);
 			Widget->SetMemory(Object);
+			Widget->SetProperty(SubProperty);
 			GeneratedWidgets.Add(Widget);
 		}
 		else

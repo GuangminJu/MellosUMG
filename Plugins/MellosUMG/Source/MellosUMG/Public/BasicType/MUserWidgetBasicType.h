@@ -46,6 +46,7 @@ public:
 	{
 		return Property->GetDisplayNameText();
 	}
+	
 protected:
 	FProperty* Property = nullptr;
 	void* Memory = nullptr;
