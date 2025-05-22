@@ -78,8 +78,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UObject> ObjectClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SkipSerialization)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SkipSerialization, meta=(ExposeOnSpawn), Setter="SetObject")
 	UObject* Object;
+
+	UFUNCTION(BlueprintCallable)
+	void SetObject(UObject* InObject);
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void CollectProperties();
@@ -114,6 +117,9 @@ protected:
 	TArray<FPropertySettings> PropertySettings;
 
 	const FPropertySettings& GetPropertySettings(const FProperty* InProperty) const;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TArray<UUserWidget*> GeneratedWidgets;
 };
 
 inline const FFunctionSettings& UMObjectUserWidget::GetFunctionSettings(const UFunction* InFunction) const

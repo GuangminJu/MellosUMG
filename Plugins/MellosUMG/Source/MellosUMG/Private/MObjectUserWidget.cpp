@@ -9,7 +9,7 @@ UMObjectUserWidget::UMObjectUserWidget(): Object(nullptr)
 void UMObjectUserWidget::NativePreConstruct()
 {
 	LoadConfig();
-		
+
 	Super::NativePreConstruct();
 }
 
@@ -26,6 +26,34 @@ void UMObjectUserWidget::PostEditChangeChainProperty(struct FPropertyChangedChai
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 
 	TryUpdateDefaultConfigFile();
+}
+
+void UMObjectUserWidget::SetObject(UObject* InObject)
+{
+	if (InObject->GetClass() != ObjectClass)
+	{
+		ensureMsgf(false, TEXT("Object class mismatch. Expected: %s, Actual: %s"),
+		           *ObjectClass->GetName(), *InObject->GetClass()->GetName());
+		return;
+	}
+
+	Object = InObject;
+
+	for (UUserWidget* Widget : GeneratedWidgets)
+	{
+		if (UMUserWidgetBasicType* UmUserWidgetBasic = Cast<UMUserWidgetBasicType>(Widget))
+		{
+			UmUserWidgetBasic->SetMemory(Object);
+		}
+		else if (UFunctionUserWidget* FunctionWidget = Cast<UFunctionUserWidget>(Widget))
+		{
+			FunctionWidget->SetObject(Object);
+		}
+		else
+		{
+			ensureMsgf(false, TEXT("Widget is not of type UMUserWidgetBasicType or UFunctionUserWidget: %s"), *Widget->GetName());
+		}
+	}
 }
 
 void UMObjectUserWidget::CollectProperties()
@@ -62,7 +90,7 @@ void UMObjectUserWidget::CollectProperties()
 			FunctionSettings.Add(FunctionSetting);
 		}
 	}
-	
+
 	Algo::Reverse(Functions);
 	Algo::Reverse(FunctionSettings);
 
@@ -96,7 +124,7 @@ TArray<UUserWidget*> UMObjectUserWidget::GenerateWidget()
 		Object = NewObject<UObject>(this, ObjectClass);
 	}
 
-	TArray<UUserWidget*> GeneratedWidgets;
+	GeneratedWidgets.Empty();
 
 	for (FProperty* SubProperty : Properties)
 	{
@@ -117,7 +145,7 @@ TArray<UUserWidget*> UMObjectUserWidget::GenerateWidget()
 		{
 			Class = GetSupportedWidgetClass(SubProperty);
 		}
-		
+
 		if (Class)
 		{
 			UMUserWidgetBasicType* Widget = NewObject<UMUserWidgetBasicType>(this, *Class);

@@ -18,6 +18,10 @@ class MELLOSUMG_API UMStructUserWidget : public UMUserWidgetBasicType
 
 	virtual void OnSetProperty(FProperty* InProperty) override;
 protected:
+
+	UFUNCTION(BlueprintCallable)
+	void SetInstanceStruct(const FInstancedStruct& InInstanceStruct);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInstancedStruct InstanceStruct;
 
@@ -29,7 +33,7 @@ protected:
 	TSubclassOf<UMUserWidgetBasicType> GetSupportedWidgetClass(const FProperty* InProperty);
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
-	TArray<UMUserWidgetBasicType*> GenerateWidget();
+	TArray<UUserWidget*> GenerateWidget();
 	
 	TArray<FProperty*> Properties;
 
@@ -39,4 +43,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<UMUserWidgetBasicType>> BasicTypeWidgets;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TArray<UUserWidget*> GeneratedWidgets;
 };

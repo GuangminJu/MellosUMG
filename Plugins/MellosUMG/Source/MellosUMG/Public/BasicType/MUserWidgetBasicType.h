@@ -38,15 +38,19 @@ public:
 
 	virtual void OnSetProperty(FProperty* InProperty)
 	{
-		
 	}
 
 	UFUNCTION(BlueprintPure)
 	FText GetPropertyName() const
 	{
+		if (!Property)
+		{
+			return FText::FromString(TEXT("No Property"));
+		}
+
 		return Property->GetDisplayNameText();
 	}
-	
+
 protected:
 	FProperty* Property = nullptr;
 	void* Memory = nullptr;

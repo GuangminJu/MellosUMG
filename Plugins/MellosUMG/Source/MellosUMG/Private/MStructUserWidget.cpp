@@ -15,6 +15,30 @@ void UMStructUserWidget::OnSetProperty(FProperty* InProperty)
 	InstanceStruct.InitializeAs(StructProperty->Struct, static_cast<uint8*>(StructMemory));
 }
 
+void UMStructUserWidget::SetInstanceStruct(const FInstancedStruct& InInstanceStruct)
+{
+	if (InstanceStruct.GetScriptStruct() != InInstanceStruct.GetScriptStruct())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Struct type mismatch. Expected: %s, Actual: %s"),
+			*InstanceStruct.GetScriptStruct()->GetName(), *InInstanceStruct.GetScriptStruct()->GetName());
+		return;
+	}
+	
+	InstanceStruct = InInstanceStruct;
+
+	for (UUserWidget* Widget : GeneratedWidgets)
+	{
+		if (UMUserWidgetBasicType* UserWidgetBasic = Cast<UMUserWidgetBasicType>(Widget))
+		{
+			UserWidgetBasic->SetMemory(InstanceStruct.GetMutableMemory());
+		}
+		else
+		{
+			ensureMsgf(false, TEXT("Widget is not of type UMUserWidgetBasicType: %s"), *Widget->GetName());
+		}
+	}
+}
+
 void UMStructUserWidget::CollectProperties()
 {
 	Properties.Empty();
@@ -51,9 +75,9 @@ TSubclassOf<UMUserWidgetBasicType> UMStructUserWidget::GetSupportedWidgetClass(c
 	return nullptr;
 }
 
-TArray<UMUserWidgetBasicType*> UMStructUserWidget::GenerateWidget()
+TArray<UUserWidget*> UMStructUserWidget::GenerateWidget()
 {
-	TArray<UMUserWidgetBasicType*> GeneratedWidgets;
+	GeneratedWidgets.Empty();
 
 	for (FProperty* SubProperty : Properties)
 	{

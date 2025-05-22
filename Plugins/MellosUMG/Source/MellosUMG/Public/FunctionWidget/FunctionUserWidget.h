@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class MELLOSUMG_API UFunctionUserWidget : public UUserWidget
 {
 	GENERATED_BODY()
