@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "GameFramework/GameMode.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "MellosUMGBPLibrary.generated.h"
 
@@ -26,7 +27,10 @@ UCLASS()
 class UMellosUMGBPLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_UCLASS_BODY()
+	
+	UFUNCTION(BlueprintPure)
+	static AGameMode* GetGameModeFromObject(const UObject* WorldContextObject);
 
-	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Execute Sample function", Keywords = "MellosUMG sample test testing"), Category = "MellosUMGTesting")
-	static float MellosUMGSampleFunction(float Param);
+	UFUNCTION(BlueprintCallable)
+	static UUserWidget* CreateWidgetFromObject(const UObject* WorldContextObject, TSubclassOf<UUserWidget> WidgetClass);
 };

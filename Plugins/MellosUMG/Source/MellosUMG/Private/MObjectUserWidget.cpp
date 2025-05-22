@@ -62,6 +62,9 @@ void UMObjectUserWidget::CollectProperties()
 			FunctionSettings.Add(FunctionSetting);
 		}
 	}
+	
+	Algo::Reverse(Functions);
+	Algo::Reverse(FunctionSettings);
 
 	TryUpdateDefaultConfigFile();
 }

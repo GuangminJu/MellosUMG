@@ -2,6 +2,7 @@
 
 #include "MellosUMGBPLibrary.h"
 #include "MellosUMG.h"
+#include "Blueprint/UserWidget.h"
 
 UMellosUMGBPLibrary::UMellosUMGBPLibrary(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
@@ -9,8 +10,13 @@ UMellosUMGBPLibrary::UMellosUMGBPLibrary(const FObjectInitializer& ObjectInitial
 
 }
 
-float UMellosUMGBPLibrary::MellosUMGSampleFunction(float Param)
+AGameMode* UMellosUMGBPLibrary::GetGameModeFromObject(const UObject* WorldContextObject)
 {
-	return -1;
+	return WorldContextObject ? WorldContextObject->GetWorld() ? WorldContextObject->GetWorld()->GetAuthGameMode<AGameMode>() : nullptr : nullptr;
 }
 
+UUserWidget* UMellosUMGBPLibrary::CreateWidgetFromObject(const UObject* WorldContextObject,
+	TSubclassOf<UUserWidget> WidgetClass)
+{
+	return CreateWidget<UUserWidget>(WorldContextObject->GetWorld(), WidgetClass);
+}
