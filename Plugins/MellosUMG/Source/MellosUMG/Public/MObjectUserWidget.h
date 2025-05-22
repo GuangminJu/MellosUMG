@@ -36,14 +36,44 @@ struct FFunctionSettings
 	}
 };
 
+USTRUCT(Blueprintable)
+struct FPropertySettings
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, Config)
+	FString Name;
+
+	UPROPERTY(EditAnywhere, Config)
+	bool bGenerateUI = true;
+
+	UPROPERTY(EditAnywhere, Config)
+	TSubclassOf<UMUserWidgetBasicType> WidgetClassOverride;
+
+	bool operator==(const FPropertySettings& RHS) const
+	{
+		return Name == RHS.Name;
+	}
+
+	bool operator==(const FString& InName) const
+	{
+		return Name == InName;
+	}
+};
+
 UCLASS(Abstract, DefaultConfig, Config = MObjectUserWidget)
 class MELLOSUMG_API UMObjectUserWidget : public UMUserWidgetBasicType
 {
 	GENERATED_BODY()
 
 	UMObjectUserWidget();
-	virtual void PostDuplicate(bool bDuplicateForPIE) override;
+	virtual void NativePreConstruct() override;
 	virtual void OnSetProperty(FProperty* InProperty) override;
+	
+#if WITH_EDITOR
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UObject> ObjectClass;
@@ -77,4 +107,29 @@ protected:
 
 	UPROPERTY(EditAnywhere, Config)
 	TArray<FFunctionSettings> FunctionSettings;
+
+	const FFunctionSettings& GetFunctionSettings(const UFunction* InFunction) const;
+
+	UPROPERTY(EditAnywhere, Config)
+	TArray<FPropertySettings> PropertySettings;
+
+	const FPropertySettings& GetPropertySettings(const FProperty* InProperty) const;
 };
+
+inline const FFunctionSettings& UMObjectUserWidget::GetFunctionSettings(const UFunction* InFunction) const
+{
+	return *FunctionSettings.FindByPredicate(
+		[InFunction](const FFunctionSettings& FunctionSetting)
+		{
+			return FunctionSetting == InFunction->GetName();
+		});
+}
+
+inline const FPropertySettings& UMObjectUserWidget::GetPropertySettings(const FProperty* InProperty) const
+{
+	return *PropertySettings.FindByPredicate(
+		[InProperty](const FPropertySettings& PropertySetting)
+		{
+			return PropertySetting == InProperty->GetName();
+		});
+}

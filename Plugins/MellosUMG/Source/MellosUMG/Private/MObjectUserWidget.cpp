@@ -6,11 +6,11 @@ UMObjectUserWidget::UMObjectUserWidget(): Object(nullptr)
 {
 }
 
-void UMObjectUserWidget::PostDuplicate(bool bDuplicateForPIE)
+void UMObjectUserWidget::NativePreConstruct()
 {
-	Super::PostDuplicate(bDuplicateForPIE);
-
-	ReloadConfig();
+	LoadConfig();
+		
+	Super::NativePreConstruct();
 }
 
 void UMObjectUserWidget::OnSetProperty(FProperty* InProperty)
@@ -21,19 +21,36 @@ void UMObjectUserWidget::OnSetProperty(FProperty* InProperty)
 	           *ObjectClass->GetName(), *Object->GetClass()->GetName());
 }
 
+void UMObjectUserWidget::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+
+	TryUpdateDefaultConfigFile();
+}
+
 void UMObjectUserWidget::CollectProperties()
 {
 	Properties.Reset();
 	for (FProperty* SubProperty : TFieldRange<FProperty>(ObjectClass))
 	{
 		Properties.Add(SubProperty);
+
+		if (PropertySettings.Contains(SubProperty->GetName()))
+			continue;
+
+		FPropertySettings PropertySetting;
+		PropertySetting.Name = SubProperty->GetName();
+		PropertySettings.Add(PropertySetting);
 	}
 
 	Functions.Empty();
 	for (UFunction* Function : TFieldRange<UFunction>(ObjectClass))
 	{
-		if (Function->HasAnyFunctionFlags(FUNC_BlueprintCallable) && Function->GetOwnerClass() == ObjectClass &&
-			Function->NumParms == 0 && Function->GetReturnProperty() == nullptr)
+		if (!Function->GetName().IsEmpty()
+			&& Function->HasAnyFunctionFlags(FUNC_BlueprintCallable)
+			&& Function->GetOwnerClass() == ObjectClass
+			&& Function->NumParms == 0
+			&& Function->GetReturnProperty() == nullptr)
 		{
 			Functions.Add(Function);
 
@@ -80,7 +97,25 @@ TArray<UUserWidget*> UMObjectUserWidget::GenerateWidget()
 
 	for (FProperty* SubProperty : Properties)
 	{
-		if (TSubclassOf<UMUserWidgetBasicType> Class = GetSupportedWidgetClass(SubProperty))
+		const FPropertySettings& SubPropertySettings = GetPropertySettings(SubProperty);
+		TSubclassOf<UMUserWidgetBasicType> Class = SubPropertySettings.WidgetClassOverride;
+		if (Class)
+		{
+			if (!Class.GetDefaultObject()->IsPropertySupported(SubProperty))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Widget class %s does not support property %s"), *Class->GetName(),
+				       *SubProperty->GetName());
+
+				Class = nullptr;
+			}
+		}
+
+		if (!Class)
+		{
+			Class = GetSupportedWidgetClass(SubProperty);
+		}
+		
+		if (Class)
 		{
 			UMUserWidgetBasicType* Widget = NewObject<UMUserWidgetBasicType>(this, *Class);
 			Widget->SetMemory(Object);
@@ -97,16 +132,17 @@ TArray<UUserWidget*> UMObjectUserWidget::GenerateWidget()
 	{
 		return GeneratedWidgets;
 	}
-	
+
 	for (int32 i = 0; i < Functions.Num(); ++i)
 	{
-		if (FunctionSettings[i].bGenerateUI)
+		const FFunctionSettings& Settings = GetFunctionSettings(Functions[i]);
+		if (Settings.bGenerateUI)
 		{
 			TSubclassOf<UFunctionUserWidget> WidgetClassOverride = FunctionWidgetClass;
-			
-			if (FunctionSettings[i].WidgetClassOverride)
+
+			if (Settings.WidgetClassOverride)
 			{
-				WidgetClassOverride = FunctionSettings[i].WidgetClassOverride;
+				WidgetClassOverride = Settings.WidgetClassOverride;
 			}
 
 			UFunctionUserWidget* Widget = NewObject<UFunctionUserWidget>(this, WidgetClassOverride);
