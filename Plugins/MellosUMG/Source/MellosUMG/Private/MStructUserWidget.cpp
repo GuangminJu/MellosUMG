@@ -13,6 +13,21 @@ void UMStructUserWidget::OnSetProperty(FProperty* InProperty)
 
 	void* StructMemory = InProperty->ContainerPtrToValuePtr<void>(GetMemory());
 	InstanceStruct.InitializeAs(StructProperty->Struct, static_cast<uint8*>(StructMemory));
+	SetMemory(InstanceStruct.GetMutableMemory());
+}
+
+TArray<FProperty*> UMStructUserWidget::GetProperties()
+{
+	CollectProperties();
+	
+	return Properties;
+}
+
+void UMStructUserWidget::NativePreConstruct()
+{
+	LoadConfig();
+
+	Super::NativePreConstruct();
 }
 
 void UMStructUserWidget::SetInstanceStruct(const FInstancedStruct& InInstanceStruct)
@@ -25,6 +40,7 @@ void UMStructUserWidget::SetInstanceStruct(const FInstancedStruct& InInstanceStr
 	}
 	
 	InstanceStruct = InInstanceStruct;
+	SetMemory(InstanceStruct.GetMutableMemory());
 
 	for (UUserWidget* Widget : GeneratedWidgets)
 	{

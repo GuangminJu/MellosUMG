@@ -17,6 +17,8 @@ class MELLOSUMG_API UMStructUserWidget : public UMUserWidgetBasicType
 	GENERATED_BODY()
 
 	virtual void OnSetProperty(FProperty* InProperty) override;
+	virtual TArray<FProperty*> GetProperties() override;
+	virtual void NativePreConstruct() override;
 protected:
 
 	UFUNCTION(BlueprintCallable)

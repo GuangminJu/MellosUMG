@@ -8,9 +8,19 @@ UMObjectUserWidget::UMObjectUserWidget(): Object(nullptr)
 
 void UMObjectUserWidget::NativePreConstruct()
 {
-	LoadConfig();
-
 	Super::NativePreConstruct();
+}
+
+void UMObjectUserWidget::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+
+	if (!Object)
+	{
+		Object = NewObject<UObject>(this, ObjectClass);
+		SetMemory(Object);
+		CollectProperties();
+	}
 }
 
 void UMObjectUserWidget::OnSetProperty(FProperty* InProperty)
@@ -19,6 +29,13 @@ void UMObjectUserWidget::OnSetProperty(FProperty* InProperty)
 	Object = ObjectProperty->GetObjectPropertyValue(GetMemory());
 	ensureMsgf(Object->GetClass() == ObjectClass, TEXT("Object class mismatch. Expected: %s, Actual: %s"),
 	           *ObjectClass->GetName(), *Object->GetClass()->GetName());
+}
+
+TArray<FProperty*> UMObjectUserWidget::GetProperties()
+{
+	CollectProperties();
+
+	return Properties;
 }
 
 void UMObjectUserWidget::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent)
@@ -38,6 +55,7 @@ void UMObjectUserWidget::SetObject(UObject* InObject)
 	}
 
 	Object = InObject;
+	SetMemory(Object);
 
 	for (UUserWidget* Widget : GeneratedWidgets)
 	{

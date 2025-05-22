@@ -68,8 +68,10 @@ class MELLOSUMG_API UMObjectUserWidget : public UMUserWidgetBasicType
 
 	UMObjectUserWidget();
 	virtual void NativePreConstruct() override;
+	virtual void NativeOnInitialized() override;
 	virtual void OnSetProperty(FProperty* InProperty) override;
-	
+	virtual TArray<FProperty*> GetProperties() override;
+
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
