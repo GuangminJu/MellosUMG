@@ -5,7 +5,7 @@
 
 FText UFunctionUserWidget::GetFunctionName() const
 {
-	return Function ? Function->GetDisplayNameText() : FText::GetEmpty();
+	return Function ? Function->GetDisplayNameText() : FText::FromString(TEXT("No Function"));
 }
 
 void UFunctionUserWidget::Call()
