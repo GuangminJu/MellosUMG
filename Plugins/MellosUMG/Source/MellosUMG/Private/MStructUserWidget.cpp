@@ -25,8 +25,6 @@ TArray<FProperty*> UMStructUserWidget::GetProperties()
 
 void UMStructUserWidget::NativePreConstruct()
 {
-	LoadConfig();
-
 	Super::NativePreConstruct();
 }
 

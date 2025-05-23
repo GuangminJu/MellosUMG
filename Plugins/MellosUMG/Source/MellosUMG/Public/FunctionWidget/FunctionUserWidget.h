@@ -9,6 +9,9 @@
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCall, UFunctionUserWidget*, InWidget);
+
 UCLASS(Abstract)
 class MELLOSUMG_API UFunctionUserWidget : public UUserWidget
 {
@@ -32,9 +35,19 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Function")
 	void Call();
 
+	// Some widget like check button ui will uncheck when call
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Function")
+	void Revoke();
+
 	UPROPERTY()
 	UFunction* Function;
 
 	UPROPERTY()
 	UObject* Object;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Function", meta=(ExposeOnSpawn))
+	FText FunctionNameOverride;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Function", BlueprintAssignable)
+	FOnCall PreCall;
 };

@@ -9,13 +9,20 @@ UMObjectUserWidget::UMObjectUserWidget(): Object(nullptr)
 void UMObjectUserWidget::NativePreConstruct()
 {
 	Super::NativePreConstruct();
+
+	if (!Object && ObjectClass)
+	{
+		Object = NewObject<UObject>(this, ObjectClass);
+		SetMemory(Object);
+		CollectProperties();
+	}
 }
 
 void UMObjectUserWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	if (!Object)
+	if (!Object && ObjectClass)
 	{
 		Object = NewObject<UObject>(this, ObjectClass);
 		SetMemory(Object);
@@ -26,9 +33,14 @@ void UMObjectUserWidget::NativeOnInitialized()
 void UMObjectUserWidget::OnSetProperty(FProperty* InProperty)
 {
 	FObjectProperty* ObjectProperty = CastField<FObjectProperty>(InProperty);
-	Object = ObjectProperty->GetObjectPropertyValue(GetMemory());
-	ensureMsgf(Object->GetClass() == ObjectClass, TEXT("Object class mismatch. Expected: %s, Actual: %s"),
-	           *ObjectClass->GetName(), *Object->GetClass()->GetName());
+	if (!GetMemory())
+		return;
+
+	Object = *ObjectProperty->ContainerPtrToValuePtr<UObject*>(GetMemory());
+	if (Object)
+	{
+		ObjectClass = Object->GetClass();
+	}
 }
 
 TArray<FProperty*> UMObjectUserWidget::GetProperties()
@@ -69,7 +81,8 @@ void UMObjectUserWidget::SetObject(UObject* InObject)
 		}
 		else
 		{
-			ensureMsgf(false, TEXT("Widget is not of type UMUserWidgetBasicType or UFunctionUserWidget: %s"), *Widget->GetName());
+			ensureMsgf(false, TEXT("Widget is not of type UMUserWidgetBasicType or UFunctionUserWidget: %s"),
+			           *Widget->GetName());
 		}
 	}
 }
@@ -118,6 +131,9 @@ void UMObjectUserWidget::CollectProperties()
 bool UMObjectUserWidget::IsPropertySupported(const FProperty* InProperty) const
 {
 	const FObjectProperty* InObjectProperty = CastField<FObjectProperty>(InProperty);
+	if (!InObjectProperty)
+		return false;
+
 	return InObjectProperty->PropertyClass == ObjectClass;
 }
 
@@ -137,6 +153,11 @@ TSubclassOf<UMUserWidgetBasicType> UMObjectUserWidget::GetSupportedWidgetClass(c
 
 TArray<UUserWidget*> UMObjectUserWidget::GenerateWidget()
 {
+	if (!ObjectClass)
+	{
+		return {};
+	}
+
 	if (!Object)
 	{
 		Object = NewObject<UObject>(this, ObjectClass);

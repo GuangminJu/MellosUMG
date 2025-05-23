@@ -5,14 +5,20 @@
 
 FText UFunctionUserWidget::GetFunctionName() const
 {
+	if (!FunctionNameOverride.IsEmpty())
+	{
+		return FunctionNameOverride;
+	}
+
 	return Function ? Function->GetDisplayNameText() : FText::FromString(TEXT("No Function"));
 }
 
 void UFunctionUserWidget::Call()
 {
+	PreCall.Broadcast(this);
+
 	if (!Function || !Object)
 	{
-		ensureMsgf(false, TEXT("Function or Object is null"));
 		return;
 	}
 
